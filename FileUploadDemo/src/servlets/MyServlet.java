@@ -1,7 +1,7 @@
 package servlets;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -10,12 +10,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileItemFactory;
+import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
-
-import utility.MyForm;
 
 /**
  * Servlet implementation class MyServlet
@@ -23,85 +21,108 @@ import utility.MyForm;
 public class MyServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
-    /**
-     * Default constructor. 
-     */
-    public MyServlet() {
-        // TODO Auto-generated constructor stub
-    }
+	/**
+	 * Default constructor.
+	 */
+	public MyServlet() {
+		// TODO Auto-generated constructor stub
+	}
 
 	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
+	 *      response)
 	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doGet(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 	}
 
 	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
+	 *      response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
+	protected void doPost(HttpServletRequest request,
+			HttpServletResponse response) {
 		
-		MyForm myForm = new MyForm(); // Prepare bean.
+		try{
+
+			// MyForm myForm = new MyForm(); // Prepare bean.
+
+			// process(request, myForm); // Process request.
+
+			process(request); 
 		
-		// Process request.
-        
-		//process(request, myForm);
-		
-		FileItemFactory factory = new DiskFileItemFactory();
-		
-		ServletFileUpload upload = new ServletFileUpload(factory);
-		
-		List<FileItem> items = null;
-		
-		for (FileItem item : items) {
+		}catch(Exception e){
 			
-			if (item.isFormField()) {
-                
-				// Process regular form field (input type="text|radio|checkbox|etc", select, etc).
-                
-				String fieldname = item.getFieldName();
-                
-                String fieldvalue = item.getString();
-                
-                // ... (do your job here)
-                
-                System.out.print(fieldname + " -> " + fieldvalue);
-                
-            } else {
-            	
-            	System.out.println("else part...");
-                
-            	// Process form file field (input type="file").
-                
-            	String fieldname = item.getFieldName();
-                
-                String filename = FilenameUtils.getName(item.getName());
-                
-                InputStream filecontent = item.getInputStream();
-                
-                // ... (do your job here)
-            }
+			e.printStackTrace();
 			
 		}
 		
+
 	}
 
-	/*private void process(HttpServletRequest request, MyForm myForm) {
-		// TODO Auto-generated method stub
+	// private void process(HttpServletRequest request, MyForm myForm) {
+
+	private void process(HttpServletRequest request) throws Exception {
+
+		try {
+
+			List<FileItem> items = new ServletFileUpload(
+					new DiskFileItemFactory()).parseRequest(request);
+
+			for (FileItem item : items) {
+
+				if (item.isFormField()) {
+					
+								
+				}else{ // Process the form file field (input type="file")
+					
+					String fileName = FilenameUtils.getName(item.getName());
+					
+					System.out.println("Filename -> " + fileName);
+					
+					String realPath = getServletContext().getRealPath("/");
+					
+					File file = new File(realPath+"/uploadFolder");
+					
+					file.mkdir();
+					
+					String prefix = FilenameUtils.getBaseName(fileName) + "_";
+		            
+					String suffix = "." + FilenameUtils.getExtension(fileName);
+					
+					// Prepare filename prefix and suffix for an unique filename in upload folder.
+					
+					File tempFile = File.createTempFile(prefix, suffix,file);  
+					
+					System.out.println("tempFile -> "+tempFile);
+					
+					item.write(tempFile); // File uploaded to "uploadFolder" in Web Server(Not database)
+					
+					// Save the File path(String) to Database now.
+					
+				}
+			}
+
+		} catch (FileUploadException e) {
+
+			e.printStackTrace();
+			
+			throw new Exception(e);
 		
-		// Validate file.
-        Object fileObject = request.getAttribute("file");
+		} catch (IOException e) {
+			
+			e.printStackTrace();
+			
+			throw new Exception(e);
 		
-		if (!myForm.hasErrors()) {
+		} catch (Exception e) {
 			
-			FileItem fileItem = (FileItem) fileObject;
+			e.printStackTrace();
 			
-			String fileName = FilenameUtils.getName(fileItem.getName());
-			
-			System.out.println(fileName);
-		}
-	}*/
+			throw new Exception(e);
+		} 
+
+	}
 
 }
