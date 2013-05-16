@@ -15,4 +15,4 @@ You need to have atleast the following 3 jars in the /WEB-INF/lib of your webapp
 
 commons-fileupload.jar, commons-io.jar, servlet-api.jar
 
-Clone this repository for a kickoff example :)
+Thanks to BalusC.Clone this repository for a kickoff example :)
